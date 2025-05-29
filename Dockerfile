@@ -39,6 +39,7 @@ RUN echo "Downloading GeoSPARQL extension ${JENA_VERSION}..." && \
 # Download and install Apache SIS binary distribution
 ENV SIS_HOME=/apache-sis
 ENV SIS_VERSION=1.4
+ENV SIS_DATA=$FUSEKI_BASE/SIS_DATA
 RUN echo "Downloading Apache SIS binary distribution ${SIS_VERSION}..." && \
     wget -O /tmp/apache-sis-${SIS_VERSION}-bin.zip \
     "https://dlcdn.apache.org/sis/${SIS_VERSION}/apache-sis-${SIS_VERSION}-bin.zip" && \
@@ -47,10 +48,9 @@ RUN echo "Downloading Apache SIS binary distribution ${SIS_VERSION}..." && \
     unzip -q apache-sis-${SIS_VERSION}-bin.zip && \
     mv apache-sis-${SIS_VERSION} $SIS_HOME && \
     rm apache-sis-${SIS_VERSION}-bin.zip && \
+    mkdir -p $SIS_DATA && \
     echo "Apache SIS binary distribution installed"
 
-# Set SIS_DATA environment variable for coordinate reference system support
-ENV SIS_DATA=$FUSEKI_BASE/SIS_DATA
 ENV PATH=$PATH:$SIS_HOME/bin
 
 # Download, extract and install Jena tools
