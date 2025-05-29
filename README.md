@@ -17,7 +17,8 @@ This Docker container provides Apache Jena Fuseki with built-in GeoSPARQL suppor
 ### Features
 
 - 🌍 **Spatial Queries**: GeoSPARQL 1.0 support for geometric and topological operations
-- 🔍 **Text Search**: Integrated Lucene indexing for SKOS labels and RDF literals
+- �️ **Coordinate Systems**: Apache SIS tools for downloading EPSG datasets
+- �🔍 **Text Search**: Integrated Lucene indexing for SKOS labels and RDF literals
 - 📊 **High Performance**: TDB storage with optimized configurations
 - 🔐 **Secure**: Built-in authentication with configurable admin password
 - 🐳 **Docker Ready**: Production-ready container with proper security settings
@@ -26,7 +27,7 @@ This Docker container provides Apache Jena Fuseki with built-in GeoSPARQL suppor
 
 More information about the GeoSPARQL implementation of Apache Jena Fuseki can be found in the [official documentation](https://jena.apache.org/documentation/geosparql/).
 
-Limitation: coordinate transformations are currently an issue. Distance calculation seems to be related to this. This probably has something to do with SIS_DATA.
+**Note**: This container includes Apache SIS command line tools to enable download of EPSG datasets. The SIS_DATA environment variable is configured to a directory inside /fuseki-base (recommended to as docker volume). It seems that this is insufficient for Jena Fuseki to properly transform coordinates or calculate metric distances for WGS84 coordinates.
 
 ## Usage
 
@@ -191,6 +192,14 @@ The container uses several configuration files in the `config/` directory:
 - `fuseki-config.ttl` - Server-wide settings and timeouts
 - `shiro.ini` - Security and authentication configuration
 - `docker-entrypoint.sh` - Container initialization script
+
+### Apache SIS Configuration
+
+The container includes Apache SIS EPSG datasets for coordinate reference system support:
+
+- **SIS_DATA Path**: `/fuseki-base/SIS_DATA`
+- **EPSG Database**: Provides access to thousands of coordinate reference systems
+- **Automatic Detection**: SIS automatically detects and uses the EPSG database for transformations
 
 You can override these by mounting your own configuration files:
 

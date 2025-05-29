@@ -7,8 +7,8 @@ FROM eclipse-temurin:21-jre-alpine AS base
 ARG JENA_VERSION=5.4.0
 ENV JENA_VERSION=${JENA_VERSION}
 
-# jq needed for tdb2.xloader, wget for downloading files
-RUN apk add --update bash ca-certificates coreutils findutils jq pwgen ruby wget && rm -rf /var/cache/apk/*
+# jq needed for tdb2.xloader, wget for downloading files, unzip for SIS datasets
+RUN apk add --update bash ca-certificates coreutils findutils jq pwgen ruby wget unzip && rm -rf /var/cache/apk/*
 
 # Config and data
 ENV FUSEKI_BASE=/fuseki-base
@@ -35,6 +35,22 @@ RUN echo "Downloading GeoSPARQL extension ${JENA_VERSION}..." && \
     wget -O $FUSEKI_HOME/jena-fuseki-geosparql-${JENA_VERSION}.jar \
     "https://repo1.maven.org/maven2/org/apache/jena/jena-fuseki-geosparql/${JENA_VERSION}/jena-fuseki-geosparql-${JENA_VERSION}.jar" && \
     echo "GeoSPARQL extension downloaded"
+
+# Download and install Apache SIS binary distribution
+ENV SIS_HOME=/apache-sis
+RUN echo "Downloading Apache SIS binary distribution ${SIS_VERSION}..." && \
+    wget -O /tmp/apache-sis-${SIS_VERSION}-bin.zip \
+    "https://dlcdn.apache.org/sis/${SIS_VERSION}/apache-sis-${SIS_VERSION}-bin.zip" && \
+    echo "Extracting Apache SIS..." && \
+    cd /tmp && \
+    unzip -q apache-sis-${SIS_VERSION}-bin.zip && \
+    mv apache-sis-${SIS_VERSION} $SIS_HOME && \
+    rm apache-sis-${SIS_VERSION}-bin.zip && \
+    echo "Apache SIS binary distribution installed"
+
+# Set SIS_DATA environment variable for coordinate reference system support
+ENV SIS_DATA=$FUSEKI_BASE/SIS_DATA
+ENV PATH=$PATH:$SIS_HOME/bin
 
 # Download, extract and install Jena tools
 RUN echo "Downloading Apache Jena ${JENA_VERSION}..." && \
@@ -70,7 +86,10 @@ RUN mkdir -p $FUSEKI_BASE/databases
 
 # Set permissions to allow fuseki to run as an arbitrary user
 RUN chgrp -R 0 $FUSEKI_BASE \
-    && chmod -R g+rwX $FUSEKI_BASE
+    && chmod -R g+rwX $FUSEKI_BASE \
+    && chgrp -R 0 $SIS_HOME \
+    && chmod -R g+rX $SIS_HOME \
+    && chmod -R g+rwX $SIS_HOME/log
 
 # Tools for loading data
 ENV JAVA_CMD='java -cp "$FUSEKI_HOME/fuseki-server.jar:/javalibs/*"'
