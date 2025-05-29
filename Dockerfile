@@ -38,6 +38,7 @@ RUN echo "Downloading GeoSPARQL extension ${JENA_VERSION}..." && \
 
 # Download and install Apache SIS binary distribution
 ENV SIS_HOME=/apache-sis
+ENV SIS_VERSION=1.4
 RUN echo "Downloading Apache SIS binary distribution ${SIS_VERSION}..." && \
     wget -O /tmp/apache-sis-${SIS_VERSION}-bin.zip \
     "https://dlcdn.apache.org/sis/${SIS_VERSION}/apache-sis-${SIS_VERSION}-bin.zip" && \
