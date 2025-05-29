@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  jena:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3030:3030"
+    environment:
+      - JVM_ARGS=-Xmx8g
+    volumes:
+      - jena-data:/fuseki-base
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 8G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+
+volumes:
+  jena-data:
+    driver: local
