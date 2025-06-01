@@ -60,12 +60,23 @@ RUN echo "Downloading Apache SIS binary distribution ${SIS_VERSION}..." && \
 RUN mkdir -p /javalibs && \
     echo "Downloading SIS embedded data dependency ${SIS_VERSION}..." && \
     wget -O /javalibs/sis-embedded-data-${SIS_VERSION}.jar \
-    "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-embedded-data/${SIS_VERSION}/sis-embedded-data-${SIS_VERSION}.jar" && \
+    "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-embedded-data/${SIS_VERSION}/sis-embedded-data-${SIS_VERSION}.jar" && \    
     echo "Downloading additional SIS dependencies for coordinate transformations..." && \
     wget -O /javalibs/sis-referencing-${SIS_VERSION}.jar \
     "https://repo1.maven.org/maven2/org/apache/sis/core/sis-referencing/${SIS_VERSION}/sis-referencing-${SIS_VERSION}.jar" && \
     wget -O /javalibs/sis-metadata-${SIS_VERSION}.jar \
     "https://repo1.maven.org/maven2/org/apache/sis/core/sis-metadata/${SIS_VERSION}/sis-metadata-${SIS_VERSION}.jar" && \
+    wget -O /javalibs/sis-epsg-${SIS_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/${SIS_VERSION}/sis-epsg-${SIS_VERSION}.jar" && \
+    wget -O /javalibs/sis-geotiff-${SIS_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/sis/storage/sis-geotiff/${SIS_VERSION}/sis-geotiff-${SIS_VERSION}.jar" && \
+    wget -O /javalibs/sis-netcdf-${SIS_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/sis/storage/sis-netcdf/${SIS_VERSION}/sis-netcdf-${SIS_VERSION}.jar" && \
+    wget -O /javalibs/sis-earth-observation-${SIS_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/sis/storage/sis-earth-observation/${SIS_VERSION}/sis-earth-observation-${SIS_VERSION}.jar" && \
+    echo "Downloading JAXB runtime for XML support..." && \
+    wget -O /javalibs/jaxb-runtime-4.0.4.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/4.0.4/jaxb-runtime-4.0.4.jar" && \
     echo "Downloading Apache Derby dependencies for SIS embedded data..." && \
     wget -O /javalibs/derby-${DERBY_VERSION}.jar \
     "https://repo1.maven.org/maven2/org/apache/derby/derby/${DERBY_VERSION}/derby-${DERBY_VERSION}.jar" && \
@@ -114,7 +125,10 @@ RUN chgrp -R 0 $FUSEKI_BASE \
     && chmod -R g+rwX $FUSEKI_BASE \
     && chgrp -R 0 $SIS_HOME \
     && chmod -R g+rX $SIS_HOME \
-    && chmod -R g+rwX $SIS_HOME/log
+    && chmod -R g+rwX $SIS_HOME/log \
+    && mkdir -p $FUSEKI_BASE/derby-logs \
+    && chgrp -R 0 $FUSEKI_BASE/derby-logs \
+    && chmod -R g+rwX $FUSEKI_BASE/derby-logs
 
 # Tools for loading data
 ENV JAVA_CMD='java -cp "$FUSEKI_HOME/fuseki-server.jar:/javalibs/*"'
@@ -131,4 +145,4 @@ EXPOSE 3030
 USER 9008
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["java", "-cp", "*:/javalibs/*", "-DSIS_DATA=/fuseki-base/SIS_DATA", "-Dorg.apache.sis.referencing.factory.sql.EPSG.embedded=true", "org.apache.jena.fuseki.main.cmds.FusekiServerCmd"]
+CMD ["java", "-cp", "*:/javalibs/*", "-DSIS_DATA=/fuseki-base/SIS_DATA", "-Dorg.apache.sis.referencing.factory.sql.EPSG.embedded=true", "-Dderby.stream.error.file=/fuseki-base/derby-logs/derby.log", "-Dderby.system.home=/fuseki-base/derby-logs", "org.apache.jena.fuseki.main.cmds.FusekiServerCmd"]
