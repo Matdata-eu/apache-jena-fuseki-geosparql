@@ -3,9 +3,15 @@
 
 FROM eclipse-temurin:21-jre-alpine AS base
 
-# Allow version to be overridden during build
+# Allow versions to be overridden during build
 ARG JENA_VERSION=5.4.0
 ENV JENA_VERSION=${JENA_VERSION}
+
+ARG SIS_VERSION=1.4
+ENV SIS_VERSION=${SIS_VERSION}
+
+ARG DERBY_VERSION=10.15.2.0
+ENV DERBY_VERSION=${DERBY_VERSION}
 
 # jq needed for tdb2.xloader, wget for downloading files, unzip for SIS datasets
 RUN apk add --update bash ca-certificates coreutils findutils jq pwgen ruby wget unzip && rm -rf /var/cache/apk/*
@@ -38,8 +44,7 @@ RUN echo "Downloading GeoSPARQL extension ${JENA_VERSION}..." && \
 
 # Download and install Apache SIS binary distribution
 ENV SIS_HOME=/apache-sis
-ENV SIS_VERSION=1.4
-ENV SIS_DATA=$FUSEKI_BASE/SIS_DATA
+ENV SIS_DATA=$FUSEKI_BASE/sis_data
 RUN echo "Downloading Apache SIS binary distribution ${SIS_VERSION}..." && \
     wget -O /tmp/apache-sis-${SIS_VERSION}-bin.zip \
     "https://dlcdn.apache.org/sis/${SIS_VERSION}/apache-sis-${SIS_VERSION}-bin.zip" && \
@@ -50,6 +55,26 @@ RUN echo "Downloading Apache SIS binary distribution ${SIS_VERSION}..." && \
     rm apache-sis-${SIS_VERSION}-bin.zip && \
     mkdir -p $SIS_DATA && \
     echo "Apache SIS binary distribution installed"
+
+# Create javalibs directory and download SIS embedded data dependency for metre-based distance calculations
+RUN mkdir -p /javalibs && \
+    echo "Downloading SIS embedded data dependency ${SIS_VERSION}..." && \
+    wget -O /javalibs/sis-embedded-data-${SIS_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-embedded-data/${SIS_VERSION}/sis-embedded-data-${SIS_VERSION}.jar" && \
+    echo "Downloading additional SIS dependencies for coordinate transformations..." && \
+    wget -O /javalibs/sis-referencing-${SIS_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/sis/core/sis-referencing/${SIS_VERSION}/sis-referencing-${SIS_VERSION}.jar" && \
+    wget -O /javalibs/sis-metadata-${SIS_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/sis/core/sis-metadata/${SIS_VERSION}/sis-metadata-${SIS_VERSION}.jar" && \
+    echo "Downloading Apache Derby dependencies for SIS embedded data..." && \
+    wget -O /javalibs/derby-${DERBY_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/derby/derby/${DERBY_VERSION}/derby-${DERBY_VERSION}.jar" && \
+    wget -O /javalibs/derby-shared-${DERBY_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/derby/derbyshared/${DERBY_VERSION}/derbyshared-${DERBY_VERSION}.jar" && \
+    wget -O /javalibs/derbytools-${DERBY_VERSION}.jar \
+    "https://repo1.maven.org/maven2/org/apache/derby/derbytools/${DERBY_VERSION}/derbytools-${DERBY_VERSION}.jar" && \
+    ls -la /javalibs/ && \
+    echo "SIS embedded data and Derby dependencies downloaded"
 
 ENV PATH=$PATH:$SIS_HOME/bin
 
@@ -76,7 +101,6 @@ RUN chmod 755 /docker-entrypoint.sh
 # SeCo extensions (commented out - file not found in current setup)
 # If you need this extension, place the JAR file in a bin/ directory and uncomment the line below
 # COPY bin/silk-arq-1.0.0-SNAPSHOT-with-dependencies.jar /javalibs/
-RUN mkdir -p /javalibs
 
 # Fuseki config
 ENV ASSEMBLER=$FUSEKI_BASE/configuration/assembler.ttl
@@ -107,4 +131,4 @@ EXPOSE 3030
 USER 9008
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["java", "-cp", "*:/javalibs/*", "org.apache.jena.fuseki.main.cmds.FusekiServerCmd"]
+CMD ["java", "-cp", "*:/javalibs/*", "-DSIS_DATA=/fuseki-base/SIS_DATA", "-Dorg.apache.sis.referencing.factory.sql.EPSG.embedded=true", "org.apache.jena.fuseki.main.cmds.FusekiServerCmd"]
