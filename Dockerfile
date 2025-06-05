@@ -1,5 +1,4 @@
 # Based on https://github.com/SemanticComputing/fuseki-docker/blob/master/Dockerfile
-# Optimized to download JAR files from Apache repositories
 
 FROM eclipse-temurin:21-jre-alpine AS base
 
@@ -15,7 +14,7 @@ ENV DERBY_VERSION=${DERBY_VERSION}
 
 # Install Maven and required tools
 # jq needed for tdb2.xloader, unzip for SIS datasets
-RUN apk add --update bash ca-certificates coreutils findutils jq pwgen ruby unzip maven && rm -rf /var/cache/apk/*
+RUN apk add --no-cache --update bash ca-certificates coreutils findutils jq pwgen ruby unzip maven && rm -rf /var/cache/apk/*
 
 # Config and data
 ENV FUSEKI_BASE=/fuseki-base
@@ -39,8 +38,8 @@ ENV PATH=$PATH:$SIS_HOME/bin
 
 # Use Maven to download all dependencies as JARs
 COPY pom.xml /tmp/pom.xml
-RUN mkdir -p /javalibs && cd /tmp && \
-    mvn dependency:copy-dependencies -DoutputDirectory=/javalibs -f pom.xml && \
+RUN mkdir -p /javalibs && \
+    mvn dependency:copy-dependencies -DoutputDirectory=/javalibs -f /tmp/pom.xml && \
     echo "All dependencies downloaded to /javalibs"
 
 COPY config/shiro.ini /jena-fuseki/shiro.ini
@@ -78,7 +77,12 @@ WORKDIR /jena-fuseki
 EXPOSE 3030
 USER 9008
 
+# Healthcheck: check if Fuseki is responding on port 3030
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD wget --spider --no-verbose http://localhost:3030/ || exit 1
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["java", "-cp", "*:/javalibs/*", "org.apache.jena.fuseki.main.cmds.FusekiServerCmd"]
 #CMD ["java", "-cp", "*:/javalibs/*", "-Dlog4j.configurationFile=/fuseki-base/log4j2.properties", "org.apache.jena.fuseki.main.cmds.FusekiServerCmd"]
 #CMD ["java", "-cp", "*:/javalibs/*", "-Dlog4j.configurationFile=/fuseki-base/log4j2.properties", "-DSIS_DATA=/fuseki-base/SIS_DATA", "-Dorg.apache.sis.referencing.factory.sql.EPSG.embedded=true", "-Dderby.stream.error.file=/fuseki-base/derby-logs/derby.log", "-Dderby.system.home=/fuseki-base/derby-logs", "org.apache.jena.fuseki.main.cmds.FusekiServerCmd"]
-CMD ["java", "-cp", "*:/javalibs/*", "-Dderby.stream.error.file=/fuseki-base/derby-logs/derby.log", "-DSIS_DATA=/fuseki-base/SIS_DATA", "org.apache.jena.fuseki.main.cmds.FusekiServerCmd"]
+#CMD ["java", "-cp", "*:/javalibs/*", "-Dlog4j.configurationFile=/fuseki-base/log4j2.properties", "-Dderby.stream.error.file=/fuseki-base/derby-logs/derby.log", "-DSIS_DATA=/fuseki-base/sis_data", "org.apache.jena.fuseki.main.cmds.FusekiServerCmd"]

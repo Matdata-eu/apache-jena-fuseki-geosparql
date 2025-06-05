@@ -27,7 +27,9 @@ This Docker container provides Apache Jena Fuseki with built-in GeoSPARQL suppor
 
 More information about the GeoSPARQL implementation of Apache Jena Fuseki can be found in the [official documentation](https://jena.apache.org/documentation/geosparql/).
 
-**Note**: This container includes Apache SIS command line tools to enable download of EPSG datasets. The SIS_DATA environment variable is configured to a directory inside /fuseki-base (recommended to as docker volume). It seems that this is insufficient for Jena Fuseki to properly transform coordinates or calculate metric distances for WGS84 coordinates.
+**Note**: This container includes Apache SIS command line tools to enable download of EPSG datasets. The SIS_DATA environment variable is configured to a directory inside /fuseki-base (recommended to mount as a docker volume).
+
+**Note 2**: The GeoSPARQL extension of Apache Jena Fuseki 5.4.0 currently does not support geof:distance with a metric unit from a source EPSG that is not metric. You still need to use the vendor function spatialF:distance for this. Please see the example queries.
 
 ## Usage
 
@@ -162,6 +164,27 @@ SELECT ?relation ?geometry1_label ?geometry2_label ?result WHERE {
   )
 }
 ORDER BY ?relation ?geometry1_label
+```
+
+```sparql
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX uom: <http://www.opengis.net/def/uom/OGC/1.0/>
+PREFIX spatialf: <http://jena.apache.org/function/spatial#>
+
+# Test GeoSPARQL distance calculation between two cities
+SELECT ?city1 ?city2 ?distance_km WHERE {
+  VALUES (?city1 ?point1 ?city2 ?point2) {
+    ("London" "<http://www.opengis.net/def/crs/EPSG/0/4326> POINT(-0.1276 51.5074)"^^geo:wktLiteral "Paris" "<http://www.opengis.net/def/crs/EPSG/0/4326> POINT(2.3522 48.8566)"^^geo:wktLiteral)
+    ("New York" "<http://www.opengis.net/def/crs/EPSG/0/4326> POINT(-74.0060 40.7128)"^^geo:wktLiteral "Boston" "<http://www.opengis.net/def/crs/EPSG/0/4326> POINT(-71.0588 42.3601)"^^geo:wktLiteral)
+    ("Amsterdam" "<http://www.opengis.net/def/crs/EPSG/0/4326> POINT(4.9041 52.3676)"^^geo:wktLiteral "Brussels" "<http://www.opengis.net/def/crs/EPSG/0/4326> POINT(4.3517 50.8503)"^^geo:wktLiteral)
+  }
+
+  # Calculate distance in kilometers
+  # implementation of geof:distance in v5.4 does not support coordinate transformation to uom:metre for non-metric EPSG, so we use spatialf:distance
+  BIND(spatialf:distance(?point1, ?point2, uom:metre) / 1000 AS ?distance_km)
+}
+ORDER BY ?distance_km
 ```
 
 ## Building from Source

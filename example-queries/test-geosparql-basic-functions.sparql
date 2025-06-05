@@ -1,0 +1,22 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX uom: <http://www.opengis.net/def/uom/OGC/1.0/>
+
+# Test basic GeoSPARQL geometry functions without UOM
+SELECT ?test_name ?point ?buffer_geom ?envelope_geom WHERE {
+  
+  VALUES (?test_name ?lat ?lon ?buffer_distance) {
+    ("Amsterdam Central" 52.3791 4.9003 0.01)
+    ("Rotterdam Port" 51.9225 4.4792 0.02)
+    ("Utrecht Center" 52.0907 5.1214 0.015)
+  }
+    # Create point geometry from coordinates
+  BIND(STRDT(CONCAT("<http://www.opengis.net/def/crs/EPSG/0/4326> POINT(", STR(?lon), " ", STR(?lat), ")"), geo:wktLiteral) AS ?point)
+  
+  # Create a buffer around the point (simple circular buffer)
+  BIND(geof:buffer(?point, ?buffer_distance, uom:degree) AS ?buffer_geom)
+  
+  # Get the envelope (bounding box) of the buffered geometry
+  BIND(geof:envelope(?buffer_geom) AS ?envelope_geom)
+}
+ORDER BY ?test_name
