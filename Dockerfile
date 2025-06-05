@@ -34,8 +34,6 @@ RUN mkdir -p $SIS_DATA && mkdir -p $SIS_HOME && mkdir -p $SIS_HOME/log
 
 ENV PATH=$PATH:$SIS_HOME/bin
 
-# COPY lib/* /javalibs/
-
 # Use Maven to download all dependencies as JARs
 COPY pom.xml /tmp/pom.xml
 RUN mkdir -p /javalibs && \
