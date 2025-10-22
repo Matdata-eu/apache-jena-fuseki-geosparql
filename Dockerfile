@@ -3,7 +3,7 @@
 FROM eclipse-temurin:21-jre-alpine AS base
 
 # Allow versions to be overridden during build
-ARG JENA_VERSION=5.4.0
+ARG JENA_VERSION=5.6.0
 ENV JENA_VERSION=${JENA_VERSION}
 
 ARG SIS_VERSION=1.4
