@@ -38,6 +38,7 @@ ENV PATH=$PATH:$SIS_HOME/bin
 COPY pom.xml /tmp/pom.xml
 # Override default versions in the POM with build-time args
 RUN sed -i \
+    -e "s|<jena.version>.*</jena.version>|<jena.version>${JENA_VERSION}</jena.version>|g" \
     -e "s|<sis.version>.*</sis.version>|<sis.version>${SIS_VERSION}</sis.version>|g" \
     /tmp/pom.xml
 RUN mkdir -p /javalibs && \
