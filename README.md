@@ -8,7 +8,7 @@
 
 This Docker container provides Apache Jena Fuseki with built-in GeoSPARQL support, enabling spatial queries on RDF data. It includes:
 
-- **Apache Jena Fuseki 5.4.0** - A robust SPARQL server and query engine
+- **Apache Jena Fuseki 6.0.0** - A robust SPARQL server and query engine
 - **GeoSPARQL Extension** - Support for spatial data queries and geometric operations
 - **Full-text Search** - Lucene-based text indexing for enhanced search capabilities
 - **TDB Storage** - High-performance triple store with union default graph
@@ -29,7 +29,7 @@ More information about the GeoSPARQL implementation of Apache Jena Fuseki can be
 
 **Note**: This container includes Apache SIS command line tools to enable download of EPSG datasets. The SIS_DATA environment variable is configured to a directory inside /fuseki-base (recommended to mount as a docker volume).
 
-**Note 2**: The GeoSPARQL extension of Apache Jena Fuseki 5.4.0 currently does not support geof:distance with a metric unit from a source EPSG that is not metric. You still need to use the vendor function spatialF:distance for this. Please see the example queries.
+**Note 2**: The GeoSPARQL extension of Apache Jena Fuseki 6.0.0 currently does not support geof:distance with a metric unit from a source EPSG that is not metric. You still need to use the vendor function spatialF:distance for this. Please see the example queries.
 
 ## Usage
 
@@ -181,7 +181,7 @@ SELECT ?city1 ?city2 ?distance_km WHERE {
   }
 
   # Calculate distance in kilometers
-  # implementation of geof:distance in v5.4 does not support coordinate transformation to uom:metre for non-metric EPSG, so we use spatialf:distance
+  # implementation of geof:distance in v6 does not support coordinate transformation to uom:metre for non-metric EPSG, so we use spatialf:distance
   BIND(spatialf:distance(?point1, ?point2, uom:metre) / 1000 AS ?distance_km)
 }
 ORDER BY ?distance_km
