@@ -10,7 +10,7 @@ SELECT * WHERE {
     ("Utrecht Center" 52.0907 5.1214)
   }
     # Create point geometry from coordinates
-  BIND(STRDT(CONCAT("<http://www.opengis.net/def/crs/EPSG/0/4326> POINT(", STR(?lon), " ", STR(?lat), ")"), geo:wktLiteral) AS ?point_wgs84)
+  BIND(STRDT(CONCAT("<http://www.opengis.net/def/crs/EPSG/0/4326> POINT(", STR(?lat), " ", STR(?lon), ")"), geo:wktLiteral) AS ?point_wgs84)
   BIND(spatialf:transformSRS(?point_wgs84, "http://www.opengis.net/def/crs/EPSG/0/25832") as ?point_utm_zone_32N)
 }
-ORDER BY ?test_name
+ORDER BY ?test_namew
