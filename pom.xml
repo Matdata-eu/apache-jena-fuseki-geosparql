@@ -45,7 +45,7 @@
 		</dependency>
 	</dependencies>
 	<properties>
-		<jena.version>6.0.0</jena.version>
+		<jena.version>6.1.0</jena.version>
 		<sis.version>1.4</sis.version>
 	</properties>
 </project>
