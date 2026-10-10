@@ -257,10 +257,37 @@ docker logs -f <container-name>
 curl -f http://localhost:3030/$/ping
 ```
 
+## Questions, bugs and feature requests
+
+Please open an issue on GitHub:
+<https://github.com/Matdata-eu/apache-jena-fuseki-geosparql/issues>.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## LICENSE
+## Credits
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+This image is maintained by Mathias Vanden Auweele ([Matdata](https://matdata.eu/)).
+It packages the work of others:
+
+- [Apache Jena](https://jena.apache.org/) Fuseki and its GeoSPARQL extension,
+  by the Apache Software Foundation (Apache-2.0)
+- [Apache SIS](https://sis.apache.org/) for coordinate reference systems (Apache-2.0)
+- The [EPSG Geodetic Parameter Dataset](https://epsg.org/) by IOGP, bundled
+  through Apache SIS's `sis-embedded-data`
+- [Eclipse Temurin](https://adoptium.net/) as the Java runtime
+- The Dockerfile and configuration started from
+  [SemanticComputing/fuseki-docker](https://github.com/SemanticComputing/fuseki-docker),
+  which is inspired by [stain/jena-docker](https://github.com/stain/jena-docker)
+
+## License
+
+The files in this repository are licensed under the Apache License 2.0, see
+the [LICENSE](LICENSE) file.
+
+The Docker image also contains third-party software under its own licenses,
+listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) (also in the image
+at `/usr/share/doc/apache-jena-fuseki-geosparql/`). Note that the EPSG dataset
+is not open source: its [terms of use](https://epsg.org/terms-of-use.html)
+allow free use and redistribution but forbid distribution for profit.

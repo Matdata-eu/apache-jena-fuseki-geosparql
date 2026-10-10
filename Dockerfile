@@ -1,6 +1,29 @@
-# Based on https://github.com/SemanticComputing/fuseki-docker/blob/master/Dockerfile
+# Based on https://github.com/SemanticComputing/fuseki-docker/blob/master/Dockerfile,
+# which is inspired by https://github.com/stain/jena-docker and carries this
+# license header:
+#
+#   Licensed to the Apache Software Foundation (ASF) under one or more
+#   contributor license agreements.  See the NOTICE file distributed with
+#   this work for additional information regarding copyright ownership.
+#   The ASF licenses this file to You under the Apache License, Version 2.0
+#   (the "License"); you may not use this file except in compliance with
+#   the License.  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 
 FROM eclipse-temurin:21-jre-alpine AS base
+
+LABEL org.opencontainers.image.title="apache-jena-fuseki-geosparql" \
+      org.opencontainers.image.description="Apache Jena Fuseki with GeoSPARQL support" \
+      org.opencontainers.image.source="https://github.com/Matdata-eu/apache-jena-fuseki-geosparql" \
+      org.opencontainers.image.authors="Mathias Vanden Auweele <mathias@matdata.eu>" \
+      org.opencontainers.image.licenses="Apache-2.0"
 
 # Allow versions to be overridden during build
 ARG JENA_VERSION=6.1.0
@@ -45,6 +68,7 @@ RUN mkdir -p /javalibs && \
     mvn dependency:copy-dependencies -DoutputDirectory=/javalibs -f /tmp/pom.xml && \
     echo "All dependencies downloaded to /javalibs"
 
+COPY LICENSE THIRD_PARTY_NOTICES.md /usr/share/doc/apache-jena-fuseki-geosparql/
 COPY config/shiro.ini /jena-fuseki/shiro.ini
 COPY config/docker-entrypoint.sh /
 RUN chmod 755 /docker-entrypoint.sh
