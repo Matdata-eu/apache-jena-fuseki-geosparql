@@ -1,0 +1,53 @@
+publiccodeYmlVersion: '0'
+name: Apache Jena Fuseki GeoSPARQL
+url: https://github.com/Matdata-eu/apache-jena-fuseki-geosparql
+landingURL: https://hub.docker.com/r/mathiasvda/apache-jena-fuseki-geosparql
+isBasedOn: https://github.com/apache/jena
+softwareVersion: '1.3'
+releaseDate: '2026-05-27'
+platforms:
+- linux
+- windows
+- mac
+categories:
+- geographic-information-systems
+- knowledge-management
+- data-analytics
+developmentStatus: stable
+softwareType: standalone/backend
+organisation:
+  uri: https://matdata.eu
+  name: Matdata
+intendedAudience:
+  scope:
+  - government
+  - science-and-technology
+  - infrastructures
+  - transportation
+description:
+  en:
+    shortDescription: Ready-to-run Docker image of Apache Jena Fuseki with GeoSPARQL and full-text search
+      enabled.
+    longDescription: |
+      Setting up GeoSPARQL and full-text search in Apache Jena Fuseki takes a fair amount of assembler configuration. This Docker image ships both enabled, so a spatial SPARQL endpoint is one `docker run` away.
+
+      It bundles Apache Jena Fuseki with the GeoSPARQL extension, a Lucene text index on labels and literals, TDB2 storage with a union default graph and Apache Shiro authentication. It suits public administrations that publish geospatial Linked Data, such as infrastructure registers, and want to query it with GeoSPARQL functions.
+    documentation: https://github.com/Matdata-eu/apache-jena-fuseki-geosparql#readme
+    features:
+    - GeoSPARQL 1.0 spatial and topological queries
+    - Lucene full-text search on SKOS labels and RDF literals
+    - TDB2 storage with a union default graph
+    - Authentication with a configurable admin password
+    - Tools to load data and EPSG coordinate reference systems
+legal:
+  license: Apache-2.0
+  mainCopyrightOwner: Matdata
+maintenance:
+  type: internal
+  contacts:
+  - name: Mathias Vanden Auweele
+    affiliation: Matdata
+localisation:
+  localisationReady: false
+  availableLanguages:
+  - en
