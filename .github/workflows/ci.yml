@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Build and smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: fuseki-geosparql:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Start Fuseki
+        run: |
+          docker run -d --name fuseki -p 3030:3030 -e ADMIN_PASSWORD=ci fuseki-geosparql:ci
+          for i in $(seq 1 60); do
+            curl -fsS 'http://localhost:3030/$/ping' && exit 0
+            sleep 2
+          done
+          docker logs fuseki
+          exit 1
+
+      # Fails when the GeoSPARQL functions aren't registered.
+      - name: Run a GeoSPARQL query
+        run: |
+          curl -fsS http://localhost:3030/ds/sparql \
+            -H 'Accept: application/sparql-results+json' \
+            --data-urlencode 'query=PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+          PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+          SELECT ?d WHERE {
+            BIND(geof:distance("POINT(0 0)"^^geo:wktLiteral, "POINT(3 4)"^^geo:wktLiteral, <http://www.opengis.net/def/uom/OGC/1.0/degree>) AS ?d)
+          }' | tee result.json
+          jq -e '.results.bindings[0].d.value | tonumber > 0' result.json
+
+      - if: failure()
+        run: docker logs fuseki
